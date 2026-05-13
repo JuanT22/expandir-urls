@@ -14,7 +14,7 @@ public class URLExpanderTask {
         .followRedirects(HttpClient.Redirect.ALWAYS)
         .build();
 
-    public Optional<String> expand(String urlShortened) {
+    public static Optional<String> expand(String urlShortened) {
         try {
             var request = HttpRequest.newBuilder()
                 .uri(URI.create(urlShortened))
