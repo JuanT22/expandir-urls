@@ -12,18 +12,15 @@ import java.util.Optional;
  */
 public class App {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException{
         var path = Path.of(
-            "/Users/jorgaf/Documents/Clases/abril-agosto2026/presencial/pro-ava/urls.csv"
+                "C:/Users/juani/Downloads/urls.csv"
         );
-        try (var lines = Files.lines(path)) {
-            lines
-                .filter(line -> !line.isBlank()) //Eliminar urls vacías. List<String>
-                .map(String::trim) // Eliminar espacios en blanco en una url. List<String>
-                .map(URLExpanderTask::expand) // Transformar la url en su versión expandida. List<Optional<String>>
-                .filter(opt -> opt.isPresent()) // Eliminar urls que no pudieron expandirse. List<Optional<String>>
-                .map(Optional::get) // Obtener la url expandida. List<String>
-                .forEach(System.out::println); //Imprimir la url expandida
-        } catch (IOException _) {}
+        var allData = Files.readAllLines(path);
+        for (var line : allData) {
+            new Thread(()->
+                    URLExpanderTask.expand(line).ifPresent(System.out::println)
+            ).start();
+        }
     }
 }
