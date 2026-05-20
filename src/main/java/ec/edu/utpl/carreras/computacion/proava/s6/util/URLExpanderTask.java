@@ -6,26 +6,31 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
-public class URLExpanderTask {
+public class URLExpanderTask implements Callable<Optional<String>> {
+    private final HttpClient client;
+    private final String urlShortened;
 
-    private static final HttpClient CLIENT = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(5))
-        .followRedirects(HttpClient.Redirect.ALWAYS)
-        .build();
+    public URLExpanderTask(HttpClient client, String urlShortened) {
+        this.client = client;
+        this.urlShortened = urlShortened;
+    }
 
-    public static Optional<String> expand(String urlShortened) {
+    @Override
+    public Optional<String> call() throws Exception {
         try {
             var request = HttpRequest.newBuilder()
-                .uri(URI.create(urlShortened))
-                .timeout(Duration.ofSeconds(5))
-                .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                .build();
+                    .uri(URI.create(urlShortened))
+                    .timeout(Duration.ofSeconds(5))
+                    .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                    .build();
 
-            HttpResponse<Void> response = CLIENT.send(
-                request,
-                HttpResponse.BodyHandlers.discarding()
+            HttpResponse<Void> response = client.send(
+                    request,
+                    HttpResponse.BodyHandlers.discarding()
             );
+
             return switch (response.statusCode()) {
                 case 200 -> Optional.of(response.uri().toString());
                 default -> Optional.empty();
